@@ -1,71 +1,12 @@
 {
   "version": "1.1",
-  "lastUpdated": "2026-10-20T17:46:05.094Z",
+  "lastUpdated": "2026-10-20T00:00:00.000Z",
   "labels": [
-    {
-      "id": "brain",
-      "name": "Brain",
-      "emoji": "🧠"
-    },
-    {
-      "id": "physical",
-      "name": "Physical",
-      "emoji": "💪"
-    },
-    {
-      "id": "target",
-      "name": "Target",
-      "emoji": "🎯"
-    }
+    { "id": "brain", "name": "Brain", "emoji": "🧠" },
+    { "id": "physical", "name": "Physical", "emoji": "💪" },
+    { "id": "target", "name": "Target", "emoji": "🎯" }
   ],
-  "skills": [
-    {
-      "id": "skill_mvgushb6mmp8o",
-      "name": "Chess",
-      "labelId": "brain",
-      "mode": "focus",
-      "level": 14,
-      "currentXP": 1,
-      "totalXP": 28,
-      "history": [
-        "2026-10-20"
-      ],
-      "lastPracticed": "2026-10-20",
-      "lastDecayCheck": "2026-10-20",
-      "createdAt": "2026-10-20T15:43:58.626Z",
-      "sortOrder": 0
-    },
-    {
-      "id": "skill_mvgyfqq29ro7h",
-      "name": "Workout",
-      "labelId": "physical",
-      "mode": "focus",
-      "level": 2,
-      "currentXP": 0,
-      "totalXP": 1,
-      "history": [
-        "2026-10-20"
-      ],
-      "lastPracticed": "2026-10-20",
-      "lastDecayCheck": "2026-10-20",
-      "createdAt": "2026-10-20T17:26:02.762Z",
-      "sortOrder": 1
-    },
-    {
-      "id": "skill_mvgygfw4tfrce",
-      "name": "Read",
-      "labelId": "brain",
-      "mode": "focus",
-      "level": 1,
-      "currentXP": 0,
-      "totalXP": 0,
-      "history": [],
-      "lastPracticed": null,
-      "lastDecayCheck": "2026-10-20",
-      "createdAt": "2026-10-20T17:26:35.380Z",
-      "sortOrder": 2
-    }
-  ],
+  "skills": [],
   "settings": {
     "sortBy": "label"
   }

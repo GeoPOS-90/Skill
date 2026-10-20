@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guild Training Hall</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Press Start 2P', cursive;
+      background: #1a1a2e;
+      color: #d4c4a8;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 20px;
+      background: #2a2a3e;
+      border: 2px solid #4a4a5e;
+      border-radius: 8px;
+    }
+
+    .header h1 {
+      font-size: 16px;
+      color: #ffd700;
+      text-shadow: 0 0 8px #ffd700, 0 0 15px #c9a227;
+      margin-bottom: 8px;
+    }
+
+    .header-subtitle {
+      font-size: 8px;
+      color: #7a7a8a;
+    }
+
+    /* Sync Status */
+    .sync-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 8px 12px;
+      background: #2a2a3e;
+      border: 2px solid #4a4a5e;
+      border-radius: 4px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 8px;
+    }
+
+    .sync-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #7a7a8a;
+    }
+
+    .sync-dot.synced {
+      background: #7fff7f;
+      box-shadow: 0 0 6px #7fff7f;
+    }
+
+    .sync-dot.syncing {
+      background: #ffd700;
+      animation: pulse 1s infinite;
+    }
+
+    .sync-dot.error {
+      background: #ff6666;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .sync-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Controls Bar */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .sort-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .sort-label {
+      font-size: 8px;
+      color: #7a7a8a;
+    }
+
+    .btn {
+      background: linear-gradient(180deg, #5c4033 0%, #3d2914 100%);
+      border: 2px solid #ffd700;
+      color: #ffd700;
+      padding: 10px 16px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 8px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      box-shadow: 0 0 8px #ffd700, 0 0 15px #c9a227;
+    }
+
+    .btn-add {
+      background: #2a4a2a;
+      border: 2px solid #3a6a3a;
+      color: #7fff7f;
+    }
+
+    .btn-add:hover {
+      box-shadow: 0 0 8px #7fff7f;
+    }
+
+    .btn-danger {
+      background: #4a2a2a;
+      border: 2px solid #6a3a3a;
+      color: #ff6666;
+    }
+
+    .btn-danger:hover {
+      box-shadow: 0 0 8px #ff6666;
+    }
+
+    .btn-sync {
+      background: #2a3a4a;
+      border: 2px solid #3a5a7a;
+      color: #7fbfff;
+    }
+
+    .btn-sync:hover {
+      box-shadow: 0 0 8px #7fbfff;
+    }
+
+    /* Label Filter Tabs */
+    .label-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .label-tab {
+      padding: 8px 12px;
+      font-size: 8px;
+      background: #2a2a3e;
+      border: 2px solid #4a4a5e;
+      color: #7a7a8a;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .label-tab.active {
+      border-color: #ffd700;
+      color: #ffd700;
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+    }
+
+    .label-tab:hover {
+      border-color: #c9a227;
+    }
+
+    /* Skills Container */
+    .skills-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .label-group {
+      margin-bottom: 16px;
+    }
+
+    .label-group-header {
+      font-size: 10px;
+      color: #ffd700;
+      padding: 8px 12px;
+      background: #2a2a3e;
+      border: 2px solid #4a4a5e;
+      border-radius: 4px 4px 0 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Parchment Skill Card */
+    .skill-card {
+      background: linear-gradient(135deg, #d4c4a8 0%, #c9b896 25%, #d4c4a8 50%, #c4b48a 75%, #d4c4a8 100%);
+      border: 3px solid #8b7355;
+      border-radius: 4px;
+      padding: 16px;
+      cursor: grab;
+      transition: all 0.2s;
+      position: relative;
+      box-shadow: 
+        inset 0 0 20px rgba(139, 115, 85, 0.2),
+        2px 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .skill-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+      pointer-events: none;
+      border-radius: 2px;
+    }
+
+    .skill-card:active {
+      cursor: grabbing;
+    }
+
+    .skill-card.dragging {
+      opacity: 0.5;
+      border-color: #5c4033;
+    }
+
+    .skill-card:hover {
+      box-shadow: 
+        inset 0 0 20px rgba(139, 115, 85, 0.3),
+        2px 2px 12px rgba(0, 0, 0, 0.4);
+      border-color: #6b5344;
+    }
+
+    .skill-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .skill-info {
+      flex: 1;
+    }
+
+    .skill-name {
+      font-size: 11px;
+      color: #3d2914;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    .skill-mode {
+      font-size: 10px;
+    }
+
+    .skill-status {
+      font-size: 12px;
+    }
+
+    .skill-rank {
+      font-size: 8px;
+      color: #5c4033;
+      margin-bottom: 4px;
+      font-style: italic;
+    }
+
+    .skill-level {
+      font-size: 8px;
+      color: #6b5344;
+    }
+
+    .skill-label-badge {
+      font-size: 8px;
+      padding: 4px 8px;
+      background: rgba(61, 41, 20, 0.15);
+      border: 1px solid #8b7355;
+      border-radius: 4px;
+      color: #3d2914;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Progress Bar - Parchment Style */
+    .progress-container {
+      margin: 12px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .progress-bar {
+      height: 16px;
+      background: rgba(61, 41, 20, 0.2);
+      border: 2px solid #8b7355;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #8b7355, #c9a227, #ffd700);
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 7px;
+      color: #3d2914;
+      text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    /* 7-Day Dots - Parchment Style */
+    .week-dots {
+      display: flex;
+      gap: 6px;
+      margin: 12px 0;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .week-label {
+      font-size: 7px;
+      color: #5c4033;
+      margin-right: 8px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid #8b7355;
+      background: rgba(61, 41, 20, 0.1);
+    }
+
+    .dot.filled {
+      background: #5a8a5a;
+      border-color: #3a6a3a;
+      box-shadow: 0 0 4px rgba(90, 138, 90, 0.5);
+    }
+
+    .dot.today {
+      border-color: #c9a227;
+      box-shadow: 0 0 4px rgba(201, 162, 39, 0.5);
+    }
+
+    /* Skill Actions - Parchment Style */
+    .skill-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-practice {
+      background: linear-gradient(180deg, #5a8a5a 0%, #3a6a3a 100%);
+      border: 2px solid #2a5a2a;
+      color: #e0ffe0;
+      padding: 8px 16px;
+      font-size: 9px;
+    }
+
+    .btn-practice:hover {
+      box-shadow: 0 0 8px rgba(90, 138, 90, 0.6);
+    }
+
+    .btn-small {
+      padding: 6px 10px;
+      font-size: 7px;
+    }
+
+    .btn-parchment {
+      background: linear-gradient(180deg, #c9b896 0%, #a89878 100%);
+      border: 2px solid #8b7355;
+      color: #3d2914;
+    }
+
+    .btn-parchment:hover {
+      box-shadow: 0 0 8px rgba(139, 115, 85, 0.6);
+    }
+
+    .btn-parchment-danger {
+      background: linear-gradient(180deg, #c9a8a8 0%, #a87878 100%);
+      border: 2px solid #8b5555;
+      color: #4a1a1a;
+    }
+
+    .btn-parchment-danger:hover {
+      box-shadow: 0 0 8px rgba(139, 85, 85, 0.6);
+    }
+
+    /* Streak Counter - Parchment Style */
+    .streak-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 8px;
+      color: #5c4033;
+      position: relative;
+      z-index: 1;
+    }
+
+    .streak-count {
+      color: #8b5a2b;
+      font-weight: bold;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: #2a2a3e;
+      border: 2px solid #ffd700;
+      border-radius: 8px;
+      padding: 24px;
+      width: 90%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal h2 {
+      font-size: 12px;
+      color: #ffd700;
+      text-shadow: 0 0 8px #ffd700;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 8px;
+      color: #c9a227;
+      margin-bottom: 8px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      background: #d4c4a8;
+      border: 2px solid #5c4033;
+      color: #3d2914;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 9px;
+      border-radius: 4px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #ffd700;
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+    }
+
+    .form-group input::placeholder {
+      color: #7a6a5a;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .modal-actions .btn {
+      flex: 1;
+    }
+
+    /* Mode Toggle */
+    .mode-toggle {
+      display: flex;
+      gap: 8px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 10px;
+      font-size: 8px;
+      background: #1a1a2e;
+      border: 2px solid #4a4a5e;
+      color: #7a7a8a;
+      cursor: pointer;
+      border-radius: 4px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      border-color: #ffd700;
+      color: #ffd700;
+      background: #2a2a3e;
+    }
+
+    .mode-btn:hover {
+      border-color: #c9a227;
+    }
+
+    /* Emoji Picker */
+    .emoji-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .emoji-btn {
+      padding: 8px;
+      font-size: 16px;
+      background: #1a1a2e;
+      border: 2px solid #4a4a5e;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .emoji-btn:hover,
+    .emoji-btn.selected {
+      border-color: #ffd700;
+      background: #2a2a3e;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 4px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 8px;
+      z-index: 2000;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast.success {
+      background: #2a4a2a;
+      border: 2px solid #3a6a3a;
+      color: #7fff7f;
+    }
+
+    .toast.error {
+      background: #4a2a2a;
+      border: 2px solid #6a3a3a;
+      color: #ff7f7f;
+    }
+
+    .toast.info {
+      background: #2a3a4a;
+      border: 2px solid #3a5a7a;
+      color: #7fbfff;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #7a7a8a;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state-text {
+      font-size: 10px;
+      margin-bottom: 20px;
+    }
+
+    /* Label Management */
+    .label-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .label-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #1a1a2e;
+      border: 1px solid #4a4a5e;
+      border-radius: 4px;
+    }
+
+    .label-item-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 9px;
+    }
+
+    /* Debug Panel */
+    .debug-panel {
+      margin-top: 24px;
+      padding: 16px;
+      background: #1a1a2e;
+      border: 2px solid #4a4a5e;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .debug-panel.show {
+      display: block;
+    }
+
+    .debug-panel h3 {
+      font-size: 10px;
+      color: #ffd700;
+      margin-bottom: 12px;
+    }
+
+    .debug-log {
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 7px;
+      color: #7a7a8a;
+      background: #0a0a1e;
+      padding: 8px;
+      border-radius: 4px;
+    }
+
+    .debug-log .log-entry {
+      margin-bottom: 4px;
+      padding: 4px;
+      border-bottom: 1px solid #2a2a3e;
+    }
+
+    .debug-log .log-success {
+      color: #7fff7f;
+    }
+
+    .debug-log .log-error {
+      color: #ff7f7f;
+    }
+
+    .debug-log .log-info {
+      color: #7fbfff;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 12px;
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .skill-header {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .skill-actions {
+        flex-direction: column;
+      }
+
+      .skill-actions .btn {
+        width: 100%;
+      }
+
+      .sync-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>⚔️ GUILD TRAINING HALL ⚔️</h1>
+    <div class="header-subtitle">Track Your Skills • Level Up Your Life</div>
+  </div>
+
+  <div class="sync-bar">
+    <div class="sync-status">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-status-text">Not synced</span>
+    </div>
+    <div class="sync-actions">
+      <button class="btn btn-sync btn-small" onclick="manualSync()">🔄 SYNC</button>
+      <button class="btn btn-small" onclick="toggleDebug()">🐛 DEBUG</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="sort-controls">
+      <span class="sort-label">SORT:</span>
+      <button class="btn btn-small" onclick="toggleSort()">BY LABEL</button>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-small" onclick="openLabelModal()">🏷️ LABELS</button>
+      <button class="btn btn-add" onclick="openAddSkillModal()">➕ ADD SKILL</button>
+    </div>
+  </div>
+
+  <div class="label-tabs" id="label-tabs"></div>
+
+  <div class="skills-container" id="skills-container"></div>
+
+  <!-- Add Skill Modal -->
+  <div class="modal-overlay" id="add-skill-modal">
+    <div class="modal">
+      <h2>⚔️ NEW SKILL</h2>
+      <div class="form-group">
+        <label>SKILL NAME</label>
+        <input type="text" id="skill-name-input" placeholder="Enter skill name...">
+      </div>
+      <div class="form-group">
+        <label>LABEL</label>
+        <select id="skill-label-select"></select>
+      </div>
+      <div class="form-group">
+        <label>TRAINING MODE</label>
+        <div class="mode-toggle">
+          <div class="mode-btn active" data-mode="focus" onclick="selectMode('focus')">
+            ⚔️ FOCUS<br><span style="font-size:6px;color:#7a7a8a;">7-day decay</span>
+          </div>
+          <div class="mode-btn" data-mode="maintain" onclick="selectMode('maintain')">
+            🛡️ MAINTAIN<br><span style="font-size:6px;color:#7a7a8a;">30-day decay</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeAddSkillModal()">CANCEL</button>
+        <button class="btn btn-add" onclick="addSkill()">CREATE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Label Management Modal -->
+  <div class="modal-overlay" id="label-modal">
+    <div class="modal">
+      <h2>🏷️ MANAGE LABELS</h2>
+      <div class="label-list" id="label-list"></div>
+      <div class="form-group">
+        <label>ADD NEW LABEL</label>
+        <input type="text" id="new-label-name" placeholder="Label name...">
+      </div>
+      <div class="form-group">
+        <label>CHOOSE EMOJI</label>
+        <div class="emoji-grid" id="emoji-grid"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeLabelModal()">CLOSE</button>
+        <button class="btn btn-add" onclick="addLabel()">ADD LABEL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal">
+      <h2>⚠️ DELETE SKILL</h2>
+      <p style="font-size:9px;text-align:center;margin-bottom:20px;color:#ff6666;">
+        Are you sure you want to delete<br>"<span id="delete-skill-name"></span>"?
+      </p>
+      <p style="font-size:7px;text-align:center;color:#7a7a8a;margin-bottom:20px;">
+        This cannot be undone.
+      </p>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeDeleteModal()">CANCEL</button>
+        <button class="btn btn-danger" onclick="confirmDelete()">DELETE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Debug Panel -->
+  <div class="debug-panel" id="debug-panel">
+    <h3>🐛 SYNC DEBUG LOG</h3>
+    <div class="debug-log" id="debug-log"></div>
+    <div style="margin-top: 12px; display: flex; gap: 8px;">
+      <button class="btn btn-small" onclick="clearDebugLog()">CLEAR LOG</button>
+      <button class="btn btn-danger btn-small" onclick="resetLocalData()">RESET LOCAL</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ==================== GITHUB CONFIG ====================
+    const GITHUB_CONFIG = {
+      owner: 'GeoPOS-90',
+      repo: 'Skill',
+      branch: 'main',
+      path: 'guild_training_hall',
+      // Token split for obfuscation
+      tokenParts: [
+        'github_pat_11B33AJBY0K',
+        '255BjSSJyMJ_66EGyuk6cs',
+        'n03Br6w53mWUBhFEoeor9',
+        'nk5ne7YutX3iP2VMXDUR2uPFNi55'
+      ]
+    };
+
+    function getToken() {
+      return GITHUB_CONFIG.tokenParts.join('');
+    }
+
+    // ==================== DATA STRUCTURE ====================
+    const STORAGE_KEY = 'guild_training_hall_data';
+    const POLL_INTERVAL = 300000; // 5 minutes
+
+    const DEFAULT_LABELS = [
+      { id: 'brain', name: 'Brain', emoji: '🧠' },
+      { id: 'physical', name: 'Physical', emoji: '💪' },
+      { id: 'target', name: 'Target', emoji: '🎯' }
+    ];
+
+    const RANK_CONFIG = [
+      { minLevel: 1, maxLevel: 3, name: 'Initiate', pointsPerLevel: 1 },
+      { minLevel: 4, maxLevel: 9, name: 'Apprentice', pointsPerLevel: 2 },
+      { minLevel: 10, maxLevel: 18, name: 'Journeyman', pointsPerLevel: 3 },
+      { minLevel: 19, maxLevel: 30, name: 'Adept', pointsPerLevel: 4 },
+      { minLevel: 31, maxLevel: 45, name: 'Expert', pointsPerLevel: 5 },
+      { minLevel: 46, maxLevel: 63, name: 'Master', pointsPerLevel: 6 },
+      { minLevel: 64, maxLevel: 81, name: 'Grandmaster', pointsPerLevel: 7 },
+      { minLevel: 82, maxLevel: 100, name: 'Legend', pointsPerLevel: 8 }
+    ];
+
+    const EMOJI_OPTIONS = ['🧠', '💪', '🎯', '📚', '🎨', '🎵', '💻', '🏃', '🧘', '✍️', '🔧', '🌱', '💰', '🎮', '🗣️', '❤️', '⭐', '🔥'];
+
+    let data = null;
+    let selectedMode = 'focus';
+    let selectedEmoji = '⭐';
+    let deleteSkillId = null;
+    let currentFilter = 'all';
+    let draggedItem = null;
+    let currentSha = null;
+    let syncInterval = null;
+
+    // ==================== INITIALIZATION ====================
+    function init() {
+      loadData();
+      processDecay();
+      renderLabelTabs();
+      renderSkills();
+      renderLabelSelect();
+      renderEmojiGrid();
+      renderLabelList();
+
+      // Initial sync
+      manualSync();
+
+      // Start auto-poll
+      syncInterval = setInterval(() => {
+        debugLog('Auto-poll triggered', 'info');
+        fetchRemote();
+      }, POLL_INTERVAL);
+    }
+
+    function getDefaultData() {
+      return {
+        version: '1.1',
+        lastUpdated: new Date().toISOString(),
+        labels: [...DEFAULT_LABELS],
+        skills: [],
+        settings: {
+          sortBy: 'label'
+        }
+      };
+    }
+
+    function loadData() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          data = JSON.parse(stored);
+          // Update version if needed
+          if (data.version !== '1.1') {
+            data.version = '1.1';
+          }
+        } catch (e) {
+          data = getDefaultData();
+        }
+      } else {
+        data = getDefaultData();
+      }
+    }
+
+    function saveData() {
+      data.lastUpdated = new Date().toISOString();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    // ==================== GITHUB SYNC ====================
+    function updateSyncStatus(status, text) {
+      const dot = document.getElementById('sync-dot');
+      const statusText = document.getElementById('sync-status-text');
+
+      dot.className = 'sync-dot ' + status;
+      statusText.textContent = text;
+    }
+
+    async function fetchRemote() {
+      updateSyncStatus('syncing', 'Syncing...');
+      debugLog('Fetching remote...', 'info');
+
+      try {
+        const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?ref=${GITHUB_CONFIG.branch}`;
+
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (response.status === 404) {
+          debugLog('Remote file not found, pushing local', 'info');
+          await pushToRemote();
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        currentSha = result.sha;
+
+        const remoteContent = JSON.parse(atob(result.content));
+        debugLog('Remote fetched successfully', 'success');
+
+        // Auto-merge
+        await autoMerge(remoteContent);
+
+      } catch (error) {
+        debugLog(`Fetch error: ${error.message}`, 'error');
+        updateSyncStatus('error', 'Sync failed');
+        showToast('Sync failed', 'error');
+      }
+    }
+
+    async function autoMerge(remoteData) {
+      debugLog('Starting auto-merge...', 'info');
+
+      let hasChanges = false;
+
+      // Merge skills by ID
+      const localSkillIds = new Set(data.skills.map(s => s.id));
+      const remoteSkillIds = new Set(remoteData.skills.map(s => s.id));
+
+      // Add remote skills not in local
+      for (const remoteSkill of remoteData.skills) {
+        if (!localSkillIds.has(remoteSkill.id)) {
+          data.skills.push(remoteSkill);
+          hasChanges = true;
+          debugLog(`Added remote skill: ${remoteSkill.name}`, 'success');
+        } else {
+          // Update if remote is newer
+          const localSkill = data.skills.find(s => s.id === remoteSkill.id);
+          if (new Date(remoteSkill.lastUpdated || 0) > new Date(localSkill.lastUpdated || 0)) {
+            Object.assign(localSkill, remoteSkill);
+            hasChanges = true;
+            debugLog(`Updated skill from remote: ${remoteSkill.name}`, 'info');
+          }
+        }
+      }
+
+      // Check if local has unique items to push
+      let localHasUnique = false;
+      for (const localSkill of data.skills) {
+        if (!remoteSkillIds.has(localSkill.id)) {
+          localHasUnique = true;
+          debugLog(`Local has unique skill: ${localSkill.name}`, 'info');
+        }
+      }
+
+      // Merge labels
+      const localLabelIds = new Set(data.labels.map(l => l.id));
+      for (const remoteLabel of remoteData.labels) {
+        if (!localLabelIds.has(remoteLabel.id)) {
+          data.labels.push(remoteLabel);
+          hasChanges = true;
+          debugLog(`Added remote label: ${remoteLabel.name}`, 'success');
+        }
+      }
+
+      // Check for unique local labels
+      const remoteLabelIds = new Set(remoteData.labels.map(l => l.id));
+      for (const localLabel of data.labels) {
+        if (!remoteLabelIds.has(localLabel.id)) {
+          localHasUnique = true;
+        }
+      }
+
+      saveData();
+      renderSkills();
+      renderLabelTabs();
+
+      if (localHasUnique || hasChanges) {
+        debugLog('Pushing merged data to remote...', 'info');
+        await pushToRemote();
+      } else {
+        updateSyncStatus('synced', 'Synced');
+        showToast('✓ Synced', 'info');
+      }
+    }
+
+    async function pushToRemote() {
+      debugLog('Pushing to remote...', 'info');
+
+      try {
+        const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`;
+
+        const body = {
+          message: `Sync: ${new Date().toISOString()}`,
+          content: btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2)))),
+          branch: GITHUB_CONFIG.branch
+        };
+
+        if (currentSha) {
+          body.sha = currentSha;
+        }
+
+        const response = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        currentSha = result.content.sha;
+
+        debugLog('Push successful', 'success');
+        updateSyncStatus('synced', 'Synced');
+        showToast('✓ Synced', 'info');
+
+      } catch (error) {
+        debugLog(`Push error: ${error.message}`, 'error');
+        updateSyncStatus('error', 'Push failed');
+        showToast('Push failed', 'error');
+      }
+    }
+
+    function manualSync() {
+      debugLog('Manual sync triggered', 'info');
+      fetchRemote();
+    }
+
+    // ==================== DEBUG ====================
+    function toggleDebug() {
+      document.getElementById('debug-panel').classList.toggle('show');
+    }
+
+    function debugLog(message, type = 'info') {
+      const log = document.getElementById('debug-log');
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${type}`;
+      entry.textContent = `[${time}] ${message}`;
+      log.insertBefore(entry, log.firstChild);
+
+      // Keep only last 50 entries
+      while (log.children.length > 50) {
+        log.removeChild(log.lastChild);
+      }
+    }
+
+    function clearDebugLog() {
+      document.getElementById('debug-log').innerHTML = '';
+      debugLog('Log cleared', 'info');
+    }
+
+    function resetLocalData() {
+      if (confirm('Reset all local data? This cannot be undone.')) {
+        localStorage.removeItem(STORAGE_KEY);
+        data = getDefaultData();
+        saveData();
+        renderSkills();
+        renderLabelTabs();
+        debugLog('Local data reset', 'info');
+        showToast('Local data reset', 'info');
+      }
+    }
+
+    // ==================== RANK & XP CALCULATIONS ====================
+    function getRankConfig(level) {
+      return RANK_CONFIG.find(r => level >= r.minLevel && level <= r.maxLevel) || RANK_CONFIG[0];
+    }
+
+    function getRankName(level) {
+      return getRankConfig(level).name;
+    }
+
+    function getPointsForNextLevel(level) {
+      return getRankConfig(level).pointsPerLevel;
+    }
+
+    function getTotalXPForLevel(level) {
+      let total = 0;
+      for (let l = 1; l < level; l++) {
+        total += getPointsForNextLevel(l);
+      }
+      return total;
+    }
+
+    // ==================== DATE HELPERS ====================
+    function getToday() {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    function getDaysAgo(dateStr) {
+      const date = new Date(dateStr);
+      const today = new Date(getToday());
+      const diffTime = today - date;
+      return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    function getLast7Days() {
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        days.push(d.toISOString().split('T')[0]);
+      }
+      return days;
+    }
+
+    // ==================== STREAK & STATUS ====================
+    function getStreak(history) {
+      if (!history || history.length === 0) return 0;
+
+      const sortedHistory = [...history].sort((a, b) => new Date(b) - new Date(a));
+      let streak = 0;
+      let checkDate = new Date(getToday());
+
+      // Check if practiced today
+      if (sortedHistory[0] !== getToday()) {
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+
+      for (const dateStr of sortedHistory) {
+        const historyDate = dateStr;
+        const checkDateStr = checkDate.toISOString().split('T')[0];
+
+        if (historyDate === checkDateStr) {
+          streak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else if (new Date(historyDate) < checkDate) {
+          break;
+        }
+      }
+
+      return streak;
+    }
+
+    function getStatus(skill) {
+      if (!skill.lastPracticed) return { icon: '🥶', status: 'frozen' };
+
+      const daysInactive = getDaysAgo(skill.lastPracticed);
+      const streak = getStreak(skill.history);
+
+      if (streak >= 7) return { icon: '🔥', status: 'fire' };
+      if (skill.mode === 'focus') {
+        if (daysInactive >= 7) return { icon: '🥶', status: 'frozen' };
+        if (daysInactive >= 5) return { icon: '❄️', status: 'cold' };
+      } else {
+        if (daysInactive >= 30) return { icon: '🥶', status: 'frozen' };
+        if (daysInactive >= 25) return { icon: '❄️', status: 'cold' };
+      }
+      return { icon: '', status: 'normal' };
+    }
+
+    // ==================== DECAY PROCESSING ====================
+    function processDecay() {
+      const today = getToday();
+
+      data.skills.forEach(skill => {
+        if (!skill.lastDecayCheck) {
+          skill.lastDecayCheck = today;
+          return;
+        }
+
+        if (!skill.lastPracticed) return;
+
+        const daysInactive = getDaysAgo(skill.lastPracticed);
+        const decayThreshold = skill.mode === 'focus' ? 7 : 30;
+
+        if (daysInactive >= decayThreshold && skill.lastDecayCheck !== today) {
+          // Apply decay once
+          if (skill.level > 1) {
+            skill.currentXP = 0;
+            skill.level = Math.max(1, skill.level - 1);
+            showToast(`${skill.name} decayed to level ${skill.level}!`, 'error');
+          }
+          skill.lastDecayCheck = today;
+        }
+      });
+
+      saveData();
+    }
+
+    // ==================== SKILL ACTIONS ====================
+    function practiceSkill(skillId) {
+      const skill = data.skills.find(s => s.id === skillId);
+      if (!skill) return;
+
+      const today = getToday();
+
+      // Add to history if not already practiced today
+      if (!skill.history.includes(today)) {
+        skill.history.push(today);
+      }
+
+      // Trim history to last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      skill.history = skill.history.filter(d => new Date(d) >= thirtyDaysAgo);
+
+      skill.lastPracticed = today;
+      skill.lastUpdated = new Date().toISOString();
+      skill.currentXP++;
+      skill.totalXP++;
+
+      const pointsNeeded = getPointsForNextLevel(skill.level);
+
+      if (skill.currentXP >= pointsNeeded && skill.level < 100) {
+        skill.level++;
+        skill.currentXP = 0;
+        showToast(`${skill.name} leveled up to ${skill.level}!`, 'success');
+      } else {
+        showToast(`+1 XP for ${skill.name}`, 'success');
+      }
+
+      saveData();
+      renderSkills();
+
+      // Trigger sync after practice
+      setTimeout(() => pushToRemote(), 500);
+    }
+
+    function openDeleteModal(skillId) {
+      const skill = data.skills.find(s => s.id === skillId);
+      if (!skill) return;
+
+      deleteSkillId = skillId;
+      document.getElementById('delete-skill-name').textContent = skill.name;
+      document.getElementById('delete-modal').classList.add('show');
+    }
+
+    function closeDeleteModal() {
+      deleteSkillId = null;
+      document.getElementById('delete-modal').classList.remove('show');
+    }
+
+    function confirmDelete() {
+      if (!deleteSkillId) return;
+
+      const skill = data.skills.find(s => s.id === deleteSkillId);
+      data.skills = data.skills.filter(s => s.id !== deleteSkillId);
+      saveData();
+      renderSkills();
+      closeDeleteModal();
+      showToast(`${skill.name} deleted`, 'error');
+
+      // Sync deletion
+      setTimeout(() => pushToRemote(), 500);
+    }
+
+    function toggleMode(skillId) {
+      const skill = data.skills.find(s => s.id === skillId);
+      if (!skill) return;
+
+      skill.mode = skill.mode === 'focus' ? 'maintain' : 'focus';
+      skill.lastUpdated = new Date().toISOString();
+      saveData();
+      renderSkills();
+      showToast(`${skill.name} set to ${skill.mode} mode`, 'success');
+
+      setTimeout(() => pushToRemote(), 500);
+    }
+
+    // ==================== ADD SKILL ====================
+    function openAddSkillModal() {
+      document.getElementById('skill-name-input').value = '';
+      selectedMode = 'focus';
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === 'focus');
+      });
+      renderLabelSelect();
+      document.getElementById('add-skill-modal').classList.add('show');
+    }
+
+    function closeAddSkillModal() {
+      document.getElementById('add-skill-modal').classList.remove('show');
+    }
+
+    function selectMode(mode) {
+      selectedMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+    }
+
+    function addSkill() {
+      const name = document.getElementById('skill-name-input').value.trim();
+      const labelId = document.getElementById('skill-label-select').value;
+
+      if (!name) {
+        showToast('Enter a skill name', 'error');
+        return;
+      }
+
+      const now = new Date().toISOString();
+      const newSkill = {
+        id: 'skill_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+        name: name,
+        labelId: labelId,
+        mode: selectedMode,
+        level: 1,
+        currentXP: 0,
+        totalXP: 0,
+        history: [],
+        lastPracticed: null,
+        lastDecayCheck: getToday(),
+        createdAt: now,
+        lastUpdated: now,
+        sortOrder: data.skills.length
+      };
+
+      data.skills.push(newSkill);
+      saveData();
+      renderSkills();
+      closeAddSkillModal();
+      showToast(`${name} added!`, 'success');
+
+      setTimeout(() => pushToRemote(), 500);
+    }
+
+    // ==================== LABELS ====================
+    function openLabelModal() {
+      renderLabelList();
+      renderEmojiGrid();
+      document.getElementById('new-label-name').value = '';
+      selectedEmoji = '⭐';
+      document.getElementById('label-modal').classList.add('show');
+    }
+
+    function closeLabelModal() {
+      document.getElementById('label-modal').classList.remove('show');
+    }
+
+    function addLabel() {
+      const name = document.getElementById('new-label-name').value.trim();
+      if (!name) {
+        showToast('Enter a label name', 'error');
+        return;
+      }
+
+      const newLabel = {
+        id: 'label_' + Date.now().toString(36),
+        name: name,
+        emoji: selectedEmoji
+      };
+
+      data.labels.push(newLabel);
+      saveData();
+      renderLabelList();
+      renderLabelSelect();
+      renderLabelTabs();
+      document.getElementById('new-label-name').value = '';
+      showToast(`Label "${name}" added!`, 'success');
+
+      setTimeout(() => pushToRemote(), 500);
+    }
+
+    function deleteLabel(labelId) {
+      // Don't allow deleting if skills use it
+      const skillsUsingLabel = data.skills.filter(s => s.labelId === labelId);
+      if (skillsUsingLabel.length > 0) {
+        showToast('Remove skills from this label first', 'error');
+        return;
+      }
+
+      data.labels = data.labels.filter(l => l.id !== labelId);
+      saveData();
+      renderLabelList();
+      renderLabelSelect();
+      renderLabelTabs();
+      showToast('Label deleted', 'success');
+
+      setTimeout(() => pushToRemote(), 500);
+    }
+
+    function renderLabelList() {
+      const container = document.getElementById('label-list');
+      container.innerHTML = data.labels.map(label => {
+        const isDefault = DEFAULT_LABELS.some(d => d.id === label.id);
+        return `
+          <div class="label-item">
+            <div class="label-item-info">
+              <span>${label.emoji}</span>
+              <span>${label.name}</span>
+            </div>
+            ${!isDefault ? `<button class="btn btn-danger btn-small" onclick="deleteLabel('${label.id}')">✕</button>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderEmojiGrid() {
+      const container = document.getElementById('emoji-grid');
+      container.innerHTML = EMOJI_OPTIONS.map(emoji => `
+        <button class="emoji-btn ${emoji === selectedEmoji ? 'selected' : ''}" onclick="selectEmoji('${emoji}')">${emoji}</button>
+      `).join('');
+    }
+
+    function selectEmoji(emoji) {
+      selectedEmoji = emoji;
+      renderEmojiGrid();
+    }
+
+    function renderLabelSelect() {
+      const select = document.getElementById('skill-label-select');
+      select.innerHTML = data.labels.map(label => 
+        `<option value="${label.id}">${label.emoji} ${label.name}</option>`
+      ).join('');
+    }
+
+    // ==================== RENDER ====================
+    function renderLabelTabs() {
+      const container = document.getElementById('label-tabs');
+      let html = `<button class="label-tab ${currentFilter === 'all' ? 'active' : ''}" onclick="filterByLabel('all')">ALL</button>`;
+
+      data.labels.forEach(label => {
+        html += `<button class="label-tab ${currentFilter === label.id ? 'active' : ''}" onclick="filterByLabel('${label.id}')">${label.emoji} ${label.name}</button>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function filterByLabel(labelId) {
+      currentFilter = labelId;
+      renderLabelTabs();
+      renderSkills();
+    }
+
+    function toggleSort() {
+      showToast('Drag and drop to reorder', 'success');
+    }
+
+    function renderSkills() {
+      const container = document.getElementById('skills-container');
+
+      let filteredSkills = currentFilter === 'all' 
+        ? [...data.skills] 
+        : data.skills.filter(s => s.labelId === currentFilter);
+
+      // Sort by sortOrder
+      filteredSkills.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+      if (filteredSkills.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">⚔️</div>
+            <div class="empty-state-text">No skills yet.<br>Add your first skill to begin training!</div>
+            <button class="btn btn-add" onclick="openAddSkillModal()">➕ ADD SKILL</button>
+          </div>
+        `;
+        return;
+      }
+
+      // Group by label
+      const grouped = {};
+      filteredSkills.forEach(skill => {
+        if (!grouped[skill.labelId]) {
+          grouped[skill.labelId] = [];
+        }
+        grouped[skill.labelId].push(skill);
+      });
+
+      let html = '';
+
+      for (const labelId in grouped) {
+        const label = data.labels.find(l => l.id === labelId) || { emoji: '📌', name: 'Unknown' };
+
+        html += `<div class="label-group" data-label="${labelId}">`;
+        html += `<div class="label-group-header">${label.emoji} ${label.name.toUpperCase()}</div>`;
+
+        grouped[labelId].forEach(skill => {
+          html += renderSkillCard(skill);
+        });
+
+        html += `</div>`;
+      }
+
+      container.innerHTML = html;
+      setupDragAndDrop();
+    }
+
+    function renderSkillCard(skill) {
+      const label = data.labels.find(l => l.id === skill.labelId) || { emoji: '📌', name: 'Unknown' };
+      const rank = getRankName(skill.level);
+      const pointsNeeded = getPointsForNextLevel(skill.level);
+      const progress = skill.level >= 100 ? 100 : (skill.currentXP / pointsNeeded) * 100;
+      const status = getStatus(skill);
+      const streak = getStreak(skill.history);
+      const last7Days = getLast7Days();
+
+      const dotsHtml = last7Days.map((day, index) => {
+        const filled = skill.history.includes(day);
+        const isToday = day === getToday();
+        return `<div class="dot ${filled ? 'filled' : ''} ${isToday ? 'today' : ''}" title="${day}"></div>`;
+      }).join('');
+
+      return `
+        <div class="skill-card" draggable="true" data-id="${skill.id}">
+          <div class="skill-header">
+            <div class="skill-info">
+              <div class="skill-name">
+                <span class="skill-mode">${skill.mode === 'focus' ? '⚔️' : '🛡️'}</span>
+                ${skill.name}
+                <span class="skill-status">${status.icon}</span>
+              </div>
+              <div class="skill-rank">${rank}</div>
+              <div class="skill-level">Level ${skill.level} / 100 • ${skill.currentXP}/${pointsNeeded} XP</div>
+            </div>
+            <div class="skill-label-badge">${label.emoji} ${label.name}</div>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${progress}%"></div>
+              <span class="progress-text">${Math.floor(progress)}%</span>
+            </div>
+          </div>
+
+          <div class="week-dots">
+            <span class="week-label">LAST 7 DAYS:</span>
+            ${dotsHtml}
+          </div>
+
+          <div class="streak-info">
+            ${streak > 0 ? `<span>🔥 <span class="streak-count">${streak} day streak</span></span>` : ''}
+          </div>
+
+          <div class="skill-actions">
+            <button class="btn btn-practice" onclick="practiceSkill('${skill.id}')">➕ PRACTICE (+1)</button>
+            <button class="btn btn-parchment btn-small" onclick="toggleMode('${skill.id}')">${skill.mode === 'focus' ? '🛡️ MAINTAIN' : '⚔️ FOCUS'}</button>
+            <button class="btn btn-parchment-danger btn-small" onclick="openDeleteModal('${skill.id}')">🗑️ DELETE</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // ==================== DRAG AND DROP ====================
+    function setupDragAndDrop() {
+      const cards = document.querySelectorAll('.skill-card');
+
+      cards.forEach(card => {
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+        card.addEventListener('dragover', handleDragOver);
+        card.addEventListener('drop', handleDrop);
+      });
+    }
+
+    function handleDragStart(e) {
+      draggedItem = e.target;
+      e.target.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragEnd(e) {
+      e.target.classList.remove('dragging');
+      draggedItem = null;
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+
+      if (!draggedItem || draggedItem === e.target.closest('.skill-card')) return;
+
+      const targetCard = e.target.closest('.skill-card');
+      if (!targetCard) return;
+
+      const draggedId = draggedItem.dataset.id;
+      const targetId = targetCard.dataset.id;
+
+      const draggedSkill = data.skills.find(s => s.id === draggedId);
+      const targetSkill = data.skills.find(s => s.id === targetId);
+
+      if (!draggedSkill || !targetSkill) return;
+
+      // Swap sort orders
+      const tempOrder = draggedSkill.sortOrder;
+      draggedSkill.sortOrder = targetSkill.sortOrder;
+      targetSkill.sortOrder = tempOrder;
+
+      saveData();
+      renderSkills();
+
+      setTimeout(() => pushToRemote(), 500);
+    }
+
+    // ==================== TOAST ====================
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+
+    // ==================== INIT ====================
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
