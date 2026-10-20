@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dungeon Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Press Start 2P', cursive;
+      background: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Torch flicker animation */
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+      25%, 75% { opacity: 0.9; }
+    }
+
+    /* Background stone texture */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(ellipse at 20% 20%, rgba(255, 150, 50, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(255, 150, 50, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 100%, rgba(255, 215, 0, 0.05) 0%, transparent 40%);
+      pointer-events: none;
+      animation: flicker 3s infinite;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      display: block;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .header h1 {
+      font-size: 24px;
+      color: #ffd700;
+      text-shadow: 0 0 8px #ffd700, 0 0 15px #c9a227, 0 0 30px #c9a227;
+      margin-bottom: 12px;
+      letter-spacing: 4px;
+    }
+
+    .header-subtitle {
+      font-size: 9px;
+      color: #7a7a8a;
+      letter-spacing: 2px;
+    }
+
+    /* Navigation Grid */
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 1000px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* App Card */
+    .app-card {
+      background: linear-gradient(135deg, #d4c4a8 0%, #c9b896 25%, #d4c4a8 50%, #c4b48a 75%, #d4c4a8 100%);
+      border: 4px solid #8b7355;
+      border-radius: 8px;
+      padding: 24px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      position: relative;
+      cursor: pointer;
+      box-shadow: 
+        inset 0 0 30px rgba(139, 115, 85, 0.2),
+        4px 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .app-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+      pointer-events: none;
+      border-radius: 4px;
+    }
+
+    .app-card:hover {
+      transform: translateY(-8px);
+      border-color: #ffd700;
+      box-shadow: 
+        inset 0 0 30px rgba(139, 115, 85, 0.3),
+        0 0 20px rgba(255, 215, 0, 0.3),
+        4px 8px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .app-card:active {
+      transform: translateY(-4px);
+    }
+
+    .card-icon {
+      font-size: 48px;
+      display: block;
+      text-align: center;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-title {
+      font-size: 14px;
+      color: #3d2914;
+      text-align: center;
+      margin-bottom: 12px;
+      text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.3);
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-divider {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #8b7355, transparent);
+      margin: 12px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-description {
+      font-size: 8px;
+      color: #5c4033;
+      text-align: center;
+      line-height: 1.8;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-stats {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat-icon {
+      font-size: 16px;
+    }
+
+    .stat-label {
+      font-size: 6px;
+      color: #6b5344;
+    }
+
+    /* Card Variants */
+    .card-vault {
+      border-color: #c9a227;
+    }
+
+    .card-vault:hover {
+      border-color: #ffd700;
+      box-shadow: 
+        inset 0 0 30px rgba(201, 162, 39, 0.2),
+        0 0 25px rgba(255, 215, 0, 0.4),
+        4px 8px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-quest {
+      border-color: #7a5c3a;
+    }
+
+    .card-quest:hover {
+      border-color: #a87c4a;
+      box-shadow: 
+        inset 0 0 30px rgba(122, 92, 58, 0.2),
+        0 0 25px rgba(168, 124, 74, 0.4),
+        4px 8px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-skills {
+      border-color: #5a7a5a;
+    }
+
+    .card-skills:hover {
+      border-color: #7fff7f;
+      box-shadow: 
+        inset 0 0 30px rgba(90, 122, 90, 0.2),
+        0 0 25px rgba(127, 255, 127, 0.3),
+        4px 8px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 48px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-text {
+      font-size: 7px;
+      color: #4a4a5e;
+      letter-spacing: 1px;
+    }
+
+    .footer-version {
+      font-size: 6px;
+      color: #3a3a4e;
+      margin-top: 8px;
+    }
+
+    /* Decorative Torches */
+    .torch {
+      position: fixed;
+      font-size: 32px;
+      animation: flicker 2s infinite;
+    }
+
+    .torch-left {
+      top: 20%;
+      left: 24px;
+    }
+
+    .torch-right {
+      top: 20%;
+      right: 24px;
+    }
+
+    /* Corner Decorations */
+    .corner-decor {
+      position: fixed;
+      font-size: 24px;
+      color: #4a4a5e;
+      opacity: 0.5;
+    }
+
+    .corner-tl { top: 16px; left: 16px; }
+    .corner-tr { top: 16px; right: 16px; }
+    .corner-bl { bottom: 16px; left: 16px; }
+    .corner-br { bottom: 16px; right: 16px; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 16px;
+      }
+
+      .header-icon {
+        font-size: 48px;
+      }
+
+      .nav-grid {
+        grid-template-columns: 1fr;
+        padding: 0 8px;
+      }
+
+      .torch {
+        display: none;
+      }
+
+      .corner-decor {
+        display: none;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 12px;
+        letter-spacing: 2px;
+      }
+
+      .card-title {
+        font-size: 11px;
+      }
+
+      .card-icon {
+        font-size: 36px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Decorative Elements -->
+  <div class="torch torch-left">🔥</div>
+  <div class="torch torch-right">🔥</div>
+  <div class="corner-decor corner-tl">⚔️</div>
+  <div class="corner-decor corner-tr">🛡️</div>
+  <div class="corner-decor corner-bl">🗡️</div>
+  <div class="corner-decor corner-br">⚔️</div>
+
+  <!-- Header -->
+  <header class="header">
+    <span class="header-icon">🏰</span>
+    <h1>DUNGEON HUB</h1>
+    <div class="header-subtitle">YOUR ADVENTURE AWAITS</div>
+  </header>
+
+  <!-- Navigation Grid -->
+  <nav class="nav-grid">
+    <!-- Vault Card -->
+    <a href="#vault" class="app-card card-vault">
+      <span class="card-icon">🏦</span>
+      <h2 class="card-title">KINGDOM'S VAULT</h2>
+      <div class="card-divider"></div>
+      <p class="card-description">
+        Track your treasures and<br>
+        manage your kingdom's wealth.<br>
+        Net worth calculator with<br>
+        gold & crypto tracking.
+      </p>
+      <div class="card-stats">
+        <div class="stat">
+          <span class="stat-icon">💰</span>
+          <span class="stat-label">ASSETS</span>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">📊</span>
+          <span class="stat-label">CHARTS</span>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">🗺️</span>
+          <span class="stat-label">MAP</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Quest Log Card -->
+    <a href="#questlog" class="app-card card-quest">
+      <span class="card-icon">📜</span>
+      <h2 class="card-title">QUEST LOG</h2>
+      <div class="card-divider"></div>
+      <p class="card-description">
+        Manage your daily quests<br>
+        and epic adventures.<br>
+        Track tasks, set goals,<br>
+        complete your missions.
+      </p>
+      <div class="card-stats">
+        <div class="stat">
+          <span class="stat-icon">⚔️</span>
+          <span class="stat-label">QUESTS</span>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">🎯</span>
+          <span class="stat-label">GOALS</span>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">🏆</span>
+          <span class="stat-label">REWARDS</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Skills Card -->
+    <a href="#skills" class="app-card card-skills">
+      <span class="card-icon">⚔️</span>
+      <h2 class="card-title">TRAINING HALL</h2>
+      <div class="card-divider"></div>
+      <p class="card-description">
+        Level up your abilities<br>
+        and master new skills.<br>
+        Track practice streaks<br>
+        and unlock ranks.
+      </p>
+      <div class="card-stats">
+        <div class="stat">
+          <span class="stat-icon">📈</span>
+          <span class="stat-label">LEVELS</span>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">🔥</span>
+          <span class="stat-label">STREAKS</span>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">🎖️</span>
+          <span class="stat-label">RANKS</span>
+        </div>
+      </div>
+    </a>
+  </nav>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p class="footer-text">— CHOOSE YOUR PATH, ADVENTURER —</p>
+    <p class="footer-version">v1.0</p>
+  </footer>
+
+  <script>
+    // Placeholder click handler
+    document.querySelectorAll('.app-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        e.preventDefault();
+        const href = card.getAttribute('href');
+        const appName = href.replace('#', '').toUpperCase();
+
+        // Visual feedback
+        card.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+          card.style.transform = '';
+          // Placeholder alert - replace with actual navigation
+          console.log(`Navigate to: ${appName}`);
+          // Uncomment below when ready to add real links:
+          // window.location.href = 'your-actual-link.html';
+        }, 150);
+      });
+    });
+
+    // Add subtle parallax on mouse move
+    document.addEventListener('mousemove', (e) => {
+      const torches = document.querySelectorAll('.torch');
+      const x = (e.clientX / window.innerWidth - 0.5) * 10;
+      const y = (e.clientY / window.innerHeight - 0.5) * 10;
+
+      torches.forEach(torch => {
+        torch.style.transform = `translate(${x}px, ${y}px)`;
+      });
+    });
+  </script>
+</body>
+</html>
