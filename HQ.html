@@ -427,24 +427,6 @@ h<!DOCTYPE html>
   </footer>
 
   <script>
-    // Placeholder click handler
-    document.querySelectorAll('.app-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        e.preventDefault();
-        const href = card.getAttribute('href');
-        const appName = href.replace('#', '').toUpperCase();
-
-        // Visual feedback
-        card.style.transform = 'scale(0.98)';
-        setTimeout(() => {
-          card.style.transform = '';
-          // Placeholder alert - replace with actual navigation
-          console.log(`Navigate to: ${appName}`);
-          // Uncomment below when ready to add real links:
-          // window.location.href = 'your-actual-link.html';
-        }, 150);
-      });
-    });
 
     // Add subtle parallax on mouse move
     document.addEventListener('mousemove', (e) => {
