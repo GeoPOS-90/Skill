@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Guild Training Hall</title>
+  <title>Guild Training Hall v2</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     * {
@@ -702,6 +702,10 @@
       color: #7fbfff;
     }
 
+    .debug-log .log-warn {
+      color: #ffd700;
+    }
+
     /* Responsive */
     @media (max-width: 480px) {
       .header h1 {
@@ -735,7 +739,7 @@
 </head>
 <body>
   <div class="header">
-    <h1>⚔️ GUILD TRAINING HALL ⚔️</h1>
+    <h1>⚔️ GUILD TRAINING HALL v2 ⚔️</h1>
     <div class="header-subtitle">Track Your Skills • Level Up Your Life</div>
   </div>
 
@@ -851,7 +855,6 @@
       repo: 'Skill',
       branch: 'main',
       path: 'guild_training_hall',
-      // Token split for obfuscation
       tokenParts: [
         'github_pat_11B33AJBY0K',
         '255BjSSJyMJ_66EGyuk6cs',
@@ -864,10 +867,12 @@
       return GITHUB_CONFIG.tokenParts.join('');
     }
 
-    // ==================== DATA STRUCTURE ====================
+    // ==================== SYNC CONFIG - v2 ====================
     const STORAGE_KEY = 'guild_training_hall_data';
     const POLL_INTERVAL = 300000; // 5 minutes
+    const MAX_PUSH_RETRIES = 3;
 
+    // ==================== DATA STRUCTURE ====================
     const DEFAULT_LABELS = [
       { id: 'brain', name: 'Brain', emoji: '🧠' },
       { id: 'physical', name: 'Physical', emoji: '💪' },
@@ -895,6 +900,7 @@
     let draggedItem = null;
     let currentSha = null;
     let syncInterval = null;
+    let isSyncing = false;
 
     // ==================== INITIALIZATION ====================
     function init() {
@@ -906,19 +912,22 @@
       renderEmojiGrid();
       renderLabelList();
 
+      debugLog('Guild Training Hall v2 initialized', 'info');
+      debugLog('Sync strategy: Pull replaces, Push retries (max 3)', 'info');
+
       // Initial sync
       manualSync();
 
       // Start auto-poll
       syncInterval = setInterval(() => {
-        debugLog('Auto-poll triggered', 'info');
-        fetchRemote();
+        debugLog('Auto-poll triggered (5 min)', 'info');
+        pullFromRemote();
       }, POLL_INTERVAL);
     }
 
     function getDefaultData() {
       return {
-        version: '1.1',
+        version: '2.0',
         lastUpdated: new Date().toISOString(),
         labels: [...DEFAULT_LABELS],
         skills: [],
@@ -933,9 +942,8 @@
       if (stored) {
         try {
           data = JSON.parse(stored);
-          // Update version if needed
-          if (data.version !== '1.1') {
-            data.version = '1.1';
+          if (!data.version || data.version < '2.0') {
+            data.version = '2.0';
           }
         } catch (e) {
           data = getDefaultData();
@@ -950,18 +958,26 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
 
-    // ==================== GITHUB SYNC ====================
+    // ==================== GITHUB SYNC - v2 SIMPLIFIED ====================
+    // Pull replaces local. Push retries on 409.
+    // =====================================================================
+
     function updateSyncStatus(status, text) {
       const dot = document.getElementById('sync-dot');
       const statusText = document.getElementById('sync-status-text');
-
       dot.className = 'sync-dot ' + status;
       statusText.textContent = text;
     }
 
-    async function fetchRemote() {
-      updateSyncStatus('syncing', 'Syncing...');
-      debugLog('Fetching remote...', 'info');
+    async function pullFromRemote() {
+      if (isSyncing) {
+        debugLog('Sync already in progress, skipping...', 'warn');
+        return;
+      }
+
+      isSyncing = true;
+      updateSyncStatus('syncing', 'Pulling...');
+      debugLog('Pulling from remote...', 'info');
 
       try {
         const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?ref=${GITHUB_CONFIG.branch}`;
@@ -974,7 +990,8 @@
         });
 
         if (response.status === 404) {
-          debugLog('Remote file not found, pushing local', 'info');
+          debugLog('Remote file not found, pushing local data...', 'warn');
+          isSyncing = false;
           await pushToRemote();
           return;
         }
@@ -986,87 +1003,79 @@
         const result = await response.json();
         currentSha = result.sha;
 
-        const remoteContent = JSON.parse(atob(result.content));
-        debugLog('Remote fetched successfully', 'success');
+        let remoteData;
+        try {
+          remoteData = JSON.parse(atob(result.content));
+        } catch (parseErr) {
+          debugLog('Remote JSON invalid: ' + parseErr.message, 'error');
+          updateSyncStatus('error', 'Bad data');
+          isSyncing = false;
+          return;
+        }
 
-        // Auto-merge
-        await autoMerge(remoteContent);
+        // v2: Pull replaces local - no merge
+        data = remoteData;
+        if (!data.version || data.version < '2.0') {
+          data.version = '2.0';
+        }
+        saveData();
+        
+        renderSkills();
+        renderLabelTabs();
+        renderLabelSelect();
+        renderLabelList();
+
+        updateSyncStatus('synced', 'Synced');
+        debugLog('Pull completed, local updated', 'success');
+        showToast('✓ Synced', 'info');
 
       } catch (error) {
-        debugLog(`Fetch error: ${error.message}`, 'error');
+        debugLog(`Pull error: ${error.message}`, 'error');
         updateSyncStatus('error', 'Sync failed');
         showToast('Sync failed', 'error');
+      } finally {
+        isSyncing = false;
       }
     }
 
-    async function autoMerge(remoteData) {
-      debugLog('Starting auto-merge...', 'info');
+    async function fetchFreshSha() {
+      debugLog('Fetching fresh SHA...', 'info');
 
-      let hasChanges = false;
+      try {
+        const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?ref=${GITHUB_CONFIG.branch}`;
 
-      // Merge skills by ID
-      const localSkillIds = new Set(data.skills.map(s => s.id));
-      const remoteSkillIds = new Set(remoteData.skills.map(s => s.id));
-
-      // Add remote skills not in local
-      for (const remoteSkill of remoteData.skills) {
-        if (!localSkillIds.has(remoteSkill.id)) {
-          data.skills.push(remoteSkill);
-          hasChanges = true;
-          debugLog(`Added remote skill: ${remoteSkill.name}`, 'success');
-        } else {
-          // Update if remote is newer
-          const localSkill = data.skills.find(s => s.id === remoteSkill.id);
-          if (new Date(remoteSkill.lastUpdated || 0) > new Date(localSkill.lastUpdated || 0)) {
-            Object.assign(localSkill, remoteSkill);
-            hasChanges = true;
-            debugLog(`Updated skill from remote: ${remoteSkill.name}`, 'info');
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Accept': 'application/vnd.github.v3+json'
           }
+        });
+
+        if (response.status === 200) {
+          const result = await response.json();
+          currentSha = result.sha;
+          debugLog('Fresh SHA: ' + currentSha.substring(0, 7), 'info');
+          return true;
+        } else if (response.status === 404) {
+          currentSha = null;
+          debugLog('File not found, will create new', 'info');
+          return true;
         }
+      } catch (error) {
+        debugLog('Failed to fetch SHA: ' + error.message, 'error');
       }
-
-      // Check if local has unique items to push
-      let localHasUnique = false;
-      for (const localSkill of data.skills) {
-        if (!remoteSkillIds.has(localSkill.id)) {
-          localHasUnique = true;
-          debugLog(`Local has unique skill: ${localSkill.name}`, 'info');
-        }
-      }
-
-      // Merge labels
-      const localLabelIds = new Set(data.labels.map(l => l.id));
-      for (const remoteLabel of remoteData.labels) {
-        if (!localLabelIds.has(remoteLabel.id)) {
-          data.labels.push(remoteLabel);
-          hasChanges = true;
-          debugLog(`Added remote label: ${remoteLabel.name}`, 'success');
-        }
-      }
-
-      // Check for unique local labels
-      const remoteLabelIds = new Set(remoteData.labels.map(l => l.id));
-      for (const localLabel of data.labels) {
-        if (!remoteLabelIds.has(localLabel.id)) {
-          localHasUnique = true;
-        }
-      }
-
-      saveData();
-      renderSkills();
-      renderLabelTabs();
-
-      if (localHasUnique || hasChanges) {
-        debugLog('Pushing merged data to remote...', 'info');
-        await pushToRemote();
-      } else {
-        updateSyncStatus('synced', 'Synced');
-        showToast('✓ Synced', 'info');
-      }
+      return false;
     }
 
-    async function pushToRemote() {
-      debugLog('Pushing to remote...', 'info');
+    async function pushToRemote(retryCount = 0) {
+      if (isSyncing) {
+        debugLog('Sync in progress, queuing push...', 'warn');
+        return;
+      }
+
+      isSyncing = true;
+      updateSyncStatus('syncing', 'Pushing...');
+      debugLog(`Pushing to remote (attempt ${retryCount + 1}/${MAX_PUSH_RETRIES})...`, 'info');
 
       try {
         const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`;
@@ -1091,28 +1100,51 @@
           body: JSON.stringify(body)
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
+        if (response.ok) {
+          const result = await response.json();
+          currentSha = result.content.sha;
+          updateSyncStatus('synced', 'Synced');
+          debugLog('Push successful', 'success');
+          showToast('✓ Saved', 'success');
+          isSyncing = false;
+        } else if (response.status === 409) {
+          isSyncing = false;
+
+          if (retryCount < MAX_PUSH_RETRIES - 1) {
+            debugLog('SHA conflict, fetching fresh SHA and retrying...', 'warn');
+            const gotSha = await fetchFreshSha();
+            if (gotSha) {
+              await pushToRemote(retryCount + 1);
+            } else {
+              updateSyncStatus('error', 'Retry failed');
+              showToast('⚠️ Sync failed', 'error');
+            }
+          } else {
+            debugLog('Max retries reached, giving up', 'error');
+            updateSyncStatus('error', 'Conflict');
+            showToast('⚠️ Please sync manually', 'error');
+          }
+        } else {
+          const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.message || `HTTP ${response.status}`);
         }
-
-        const result = await response.json();
-        currentSha = result.content.sha;
-
-        debugLog('Push successful', 'success');
-        updateSyncStatus('synced', 'Synced');
-        showToast('✓ Synced', 'info');
-
       } catch (error) {
         debugLog(`Push error: ${error.message}`, 'error');
         updateSyncStatus('error', 'Push failed');
         showToast('Push failed', 'error');
+        isSyncing = false;
       }
     }
 
     function manualSync() {
       debugLog('Manual sync triggered', 'info');
-      fetchRemote();
+      pullFromRemote();
+    }
+
+    function saveAndSync() {
+      saveData();
+      renderSkills();
+      pushToRemote();
     }
 
     // ==================== DEBUG ====================
@@ -1128,10 +1160,11 @@
       entry.textContent = `[${time}] ${message}`;
       log.insertBefore(entry, log.firstChild);
 
-      // Keep only last 50 entries
       while (log.children.length > 50) {
         log.removeChild(log.lastChild);
       }
+
+      console.log(`[${type.toUpperCase()}] ${message}`);
     }
 
     function clearDebugLog() {
@@ -1146,6 +1179,8 @@
         saveData();
         renderSkills();
         renderLabelTabs();
+        renderLabelSelect();
+        renderLabelList();
         debugLog('Local data reset', 'info');
         showToast('Local data reset', 'info');
       }
@@ -1202,7 +1237,6 @@
       let streak = 0;
       let checkDate = new Date(getToday());
 
-      // Check if practiced today
       if (sortedHistory[0] !== getToday()) {
         checkDate.setDate(checkDate.getDate() - 1);
       }
@@ -1255,7 +1289,6 @@
         const decayThreshold = skill.mode === 'focus' ? 7 : 30;
 
         if (daysInactive >= decayThreshold && skill.lastDecayCheck !== today) {
-          // Apply decay once
           if (skill.level > 1) {
             skill.currentXP = 0;
             skill.level = Math.max(1, skill.level - 1);
@@ -1275,12 +1308,10 @@
 
       const today = getToday();
 
-      // Add to history if not already practiced today
       if (!skill.history.includes(today)) {
         skill.history.push(today);
       }
 
-      // Trim history to last 30 days
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       skill.history = skill.history.filter(d => new Date(d) >= thirtyDaysAgo);
@@ -1300,11 +1331,7 @@
         showToast(`+1 XP for ${skill.name}`, 'success');
       }
 
-      saveData();
-      renderSkills();
-
-      // Trigger sync after practice
-      setTimeout(() => pushToRemote(), 500);
+      saveAndSync();
     }
 
     function openDeleteModal(skillId) {
@@ -1326,13 +1353,10 @@
 
       const skill = data.skills.find(s => s.id === deleteSkillId);
       data.skills = data.skills.filter(s => s.id !== deleteSkillId);
-      saveData();
-      renderSkills();
+      
       closeDeleteModal();
       showToast(`${skill.name} deleted`, 'error');
-
-      // Sync deletion
-      setTimeout(() => pushToRemote(), 500);
+      saveAndSync();
     }
 
     function toggleMode(skillId) {
@@ -1341,11 +1365,9 @@
 
       skill.mode = skill.mode === 'focus' ? 'maintain' : 'focus';
       skill.lastUpdated = new Date().toISOString();
-      saveData();
-      renderSkills();
+      
       showToast(`${skill.name} set to ${skill.mode} mode`, 'success');
-
-      setTimeout(() => pushToRemote(), 500);
+      saveAndSync();
     }
 
     // ==================== ADD SKILL ====================
@@ -1397,12 +1419,9 @@
       };
 
       data.skills.push(newSkill);
-      saveData();
-      renderSkills();
       closeAddSkillModal();
       showToast(`${name} added!`, 'success');
-
-      setTimeout(() => pushToRemote(), 500);
+      saveAndSync();
     }
 
     // ==================== LABELS ====================
@@ -1432,18 +1451,15 @@
       };
 
       data.labels.push(newLabel);
-      saveData();
       renderLabelList();
       renderLabelSelect();
       renderLabelTabs();
       document.getElementById('new-label-name').value = '';
       showToast(`Label "${name}" added!`, 'success');
-
-      setTimeout(() => pushToRemote(), 500);
+      saveAndSync();
     }
 
     function deleteLabel(labelId) {
-      // Don't allow deleting if skills use it
       const skillsUsingLabel = data.skills.filter(s => s.labelId === labelId);
       if (skillsUsingLabel.length > 0) {
         showToast('Remove skills from this label first', 'error');
@@ -1451,13 +1467,11 @@
       }
 
       data.labels = data.labels.filter(l => l.id !== labelId);
-      saveData();
       renderLabelList();
       renderLabelSelect();
       renderLabelTabs();
       showToast('Label deleted', 'success');
-
-      setTimeout(() => pushToRemote(), 500);
+      saveAndSync();
     }
 
     function renderLabelList() {
@@ -1524,7 +1538,6 @@
         ? [...data.skills] 
         : data.skills.filter(s => s.labelId === currentFilter);
 
-      // Sort by sortOrder
       filteredSkills.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
       if (filteredSkills.length === 0) {
@@ -1538,7 +1551,6 @@
         return;
       }
 
-      // Group by label
       const grouped = {};
       filteredSkills.forEach(skill => {
         if (!grouped[skill.labelId]) {
@@ -1665,15 +1677,11 @@
 
       if (!draggedSkill || !targetSkill) return;
 
-      // Swap sort orders
       const tempOrder = draggedSkill.sortOrder;
       draggedSkill.sortOrder = targetSkill.sortOrder;
       targetSkill.sortOrder = tempOrder;
 
-      saveData();
-      renderSkills();
-
-      setTimeout(() => pushToRemote(), 500);
+      saveAndSync();
     }
 
     // ==================== TOAST ====================
