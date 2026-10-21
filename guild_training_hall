@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-10-21T19:11:24.064Z",
+  "lastUpdated": "2026-10-21T19:11:33.569Z",
   "labels": [
     {
       "id": "brain",
@@ -23,7 +23,7 @@
       "id": "skill_mvh19drbuhh7a",
       "name": "Chess",
       "labelId": "brain",
-      "mode": "focus",
+      "mode": "maintain",
       "level": 3,
       "currentXP": 0,
       "totalXP": 2,
@@ -34,7 +34,7 @@
       "lastPracticed": "2026-10-21",
       "lastDecayCheck": "2026-10-20",
       "createdAt": "2026-10-20T18:45:04.871Z",
-      "lastUpdated": "2026-10-21T19:11:24.064Z",
+      "lastUpdated": "2026-10-21T19:11:33.569Z",
       "sortOrder": 0
     }
   ],
