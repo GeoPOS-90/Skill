@@ -1,21 +1,21 @@
 {
-  "version": "1.1",
-  "lastUpdated": "2026-10-21T12:41:02.357Z",
+  "version": "2.0",
+  "lastUpdated": "2026-10-21T19:11:24.064Z",
   "labels": [
     {
       "id": "brain",
       "name": "Brain",
-      "emoji": "🧠"
+      "emoji": "ð§ "
     },
     {
       "id": "physical",
       "name": "Physical",
-      "emoji": "💪"
+      "emoji": "ðª"
     },
     {
       "id": "target",
       "name": "Target",
-      "emoji": "🎯"
+      "emoji": "ð¯"
     }
   ],
   "skills": [
@@ -24,16 +24,17 @@
       "name": "Chess",
       "labelId": "brain",
       "mode": "focus",
-      "level": 2,
+      "level": 3,
       "currentXP": 0,
-      "totalXP": 1,
+      "totalXP": 2,
       "history": [
-        "2026-10-20"
+        "2026-10-20",
+        "2026-10-21"
       ],
-      "lastPracticed": "2026-10-20",
+      "lastPracticed": "2026-10-21",
       "lastDecayCheck": "2026-10-20",
       "createdAt": "2026-10-20T18:45:04.871Z",
-      "lastUpdated": "2026-10-20T19:59:18.274Z",
+      "lastUpdated": "2026-10-21T19:11:24.064Z",
       "sortOrder": 0
     }
   ],
