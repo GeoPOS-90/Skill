@@ -1,21 +1,21 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-10-21T19:11:33.569Z",
+  "lastUpdated": "2026-11-04T13:05:38.335Z",
   "labels": [
     {
       "id": "brain",
       "name": "Brain",
-      "emoji": "ð§ "
+      "emoji": "Ã°ÂÂ§Â "
     },
     {
       "id": "physical",
       "name": "Physical",
-      "emoji": "ðª"
+      "emoji": "Ã°ÂÂÂª"
     },
     {
       "id": "target",
       "name": "Target",
-      "emoji": "ð¯"
+      "emoji": "Ã°ÂÂÂ¯"
     }
   ],
   "skills": [
@@ -36,6 +36,21 @@
       "createdAt": "2026-10-20T18:45:04.871Z",
       "lastUpdated": "2026-10-21T19:11:33.569Z",
       "sortOrder": 0
+    },
+    {
+      "id": "skill_mw24qmu7tne8c",
+      "name": "Range Finder",
+      "labelId": "target",
+      "mode": "focus",
+      "level": 1,
+      "currentXP": 0,
+      "totalXP": 0,
+      "history": [],
+      "lastPracticed": null,
+      "lastDecayCheck": "2026-11-04",
+      "createdAt": "2026-11-04T13:05:38.335Z",
+      "lastUpdated": "2026-11-04T13:05:38.335Z",
+      "sortOrder": 1
     }
   ],
   "settings": {
