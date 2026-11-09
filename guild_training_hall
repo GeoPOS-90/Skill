@@ -1,21 +1,21 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-11-04T13:30:12.375Z",
+  "lastUpdated": "2026-11-09T16:21:28.643Z",
   "labels": [
     {
       "id": "brain",
       "name": "Brain",
-      "emoji": "ÃÂ°ÃÂÃÂ§ÃÂ "
+      "emoji": "ÃÂÃÂ°ÃÂÃÂÃÂÃÂ§ÃÂÃÂ "
     },
     {
       "id": "physical",
       "name": "Physical",
-      "emoji": "ÃÂ°ÃÂÃÂÃÂª"
+      "emoji": "ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂª"
     },
     {
       "id": "target",
       "name": "Target",
-      "emoji": "ÃÂ°ÃÂÃÂÃÂ¯"
+      "emoji": "ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ¯"
     }
   ],
   "skills": [
@@ -25,17 +25,18 @@
       "labelId": "brain",
       "mode": "maintain",
       "level": 4,
-      "currentXP": 0,
-      "totalXP": 3,
+      "currentXP": 1,
+      "totalXP": 4,
       "history": [
         "2026-10-20",
         "2026-10-21",
-        "2026-11-04"
+        "2026-11-04",
+        "2026-11-09"
       ],
-      "lastPracticed": "2026-11-04",
+      "lastPracticed": "2026-11-09",
       "lastDecayCheck": "2026-10-20",
       "createdAt": "2026-10-20T18:45:04.871Z",
-      "lastUpdated": "2026-11-04T13:30:12.375Z",
+      "lastUpdated": "2026-11-09T16:21:28.641Z",
       "sortOrder": 0
     },
     {
